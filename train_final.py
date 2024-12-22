@@ -15,7 +15,7 @@ start_dataset_dir = '/data/scratch/ec23984/cobot_data/train_start_sequences'
 stop_dataset_dir = '/data/scratch/ec23984/cobot_data/train_stop_sequences'
 test_start_dataset_dir = '/data/scratch/ec23984/cobot_data/test_start_sequences'
 test_stop_dataset_dir = '/data/scratch/ec23984/cobot_data/test_stop_sequences'
-batch_size = 8
+batch_size = 6
 num_classes = 2  # "start" and "stop"
 num_segments = 5  # Number of frames per sequence
 num_epochs = 50
@@ -38,14 +38,6 @@ writer = SummaryWriter(log_dir=experiment_dir)
 #     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 # ])
 
-# transform = transforms.Compose([
-#     transforms.RandomHorizontalFlip(p=0.5),  # Flip with 50% probability
-#     transforms.ColorJitter(brightness=0.4, contrast=0.5),  # Simulate lighting variations
-#     transforms.GaussianBlur(kernel_size=5, sigma=(0.1, 3.0)),  # Simulate slight blur
-#     transforms.ToTensor(),  # Convert image to tensor and normalize to [0, 1]
-#     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # ImageNet normalization
-# ])
-
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(p=0.5),
@@ -66,7 +58,6 @@ test_transform = transforms.Compose([
 
 ])
 
-
 # Load Train Datasets
 start_dataset = CobotDataset(start_dataset_dir, label=0, transform=transform, mode='random')
 stop_dataset = CobotDataset(stop_dataset_dir, label=1, transform=transform, mode='random')
@@ -80,7 +71,7 @@ full_dataset = torch.utils.data.ConcatDataset([start_dataset, stop_dataset])
 full_test_dataset = torch.utils.data.ConcatDataset([test_start_dataset, test_stop_dataset])
 
 # Train/Test/Validation Split
-train_size = int(0.8 * len(full_dataset))
+train_size = int(0.9 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 
 train_dataset, val_dataset= random_split(full_dataset, [train_size, val_size])
@@ -92,7 +83,7 @@ test_loader = DataLoader(full_test_dataset, batch_size=batch_size, shuffle=False
 # Initialize TSM Model
 model = TSN(num_classes, num_segments,
             modality='RGB', base_model='resnet50',
-            consensus_type='avg', dropout=0.4)
+            consensus_type='avg', dropout=0.5)
 model.to(device)
 
 # Loss and Optimizer

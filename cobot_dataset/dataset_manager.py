@@ -36,10 +36,10 @@ class CobotDataset(Dataset):
         elif self.mode == 'random':
             # 50% random, 25% 5_second, 25% 2_second
             prob = torch.rand(1).item()  # Generate a random number between 0 and 1
-            if prob < 0.6:
+            if prob < 0.33:
                 # Random sampling
                 frame_indices = torch.randperm(len(frame_paths))[:self.num_segments]
-            elif prob < 0.8:
+            elif prob < 0.66:
                 # 5_second sampling
                 frame_indices = torch.linspace(0, len(frame_paths) - 1, self.num_segments).long()
             else:
