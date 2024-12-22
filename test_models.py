@@ -108,10 +108,6 @@ print(f"Actual Stop  {conf_matrix[1, 0]:>10} {conf_matrix[1, 1]:>15}")
 # disp.plot(cmap=plt.cm.Blues)
 # plt.title("Confusion Matrix")
 # plt.show()
-# Print First 5 Mislabeled Sequences
-print("\nFirst 5 Mislabeled Sequences:")
-for i, (seq_name, true_label, pred_label) in enumerate(mislabeled_sequences[:5]):
-    print(f"{i+1}. Sequence: {seq_name}, True Label: {true_label}, Predicted Label: {pred_label}")
 
 print(f"Average Inference Time: {average_inference_time:.2f} ms")
 
