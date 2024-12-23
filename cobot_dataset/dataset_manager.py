@@ -7,13 +7,13 @@ from torchvision import transforms
 from PIL import Image
 
 class CobotDataset(torch.utils.data.Dataset):
-    def __init__(self, root_dir, label, transform=None, mode="random", num_segments=5):
+    def __init__(self, root_dir, label, transform=None, sequence_interval="random", num_segments=5):
         self.root_dir = root_dir
         self.label = label
         self.transform = transform
         self.num_segments = num_segments
         self.sequence_folders = [os.path.join(root_dir, folder) for folder in os.listdir(root_dir)]
-        self.mode = mode
+        self.sequence_interval = sequence_interval
 
     def __len__(self):
         return len(self.sequence_folders)
@@ -22,11 +22,11 @@ class CobotDataset(torch.utils.data.Dataset):
         folder_path = self.sequence_folders[idx]
         frame_paths = sorted([os.path.join(folder_path, frame) for frame in os.listdir(folder_path)])
 
-        if self.mode == "random":
+        if self.sequence_interval == "random":
             selected_frames = random.sample(frame_paths, self.num_segments)
-        elif self.mode == "5_second":
+        elif self.sequence_interval == "5_second":
             selected_frames = frame_paths[:self.num_segments]
-        elif self.mode == "2_second":
+        elif self.sequence_interval == "2_second":
             stride = max(len(frame_paths) // self.num_segments, 1)
             selected_frames = frame_paths[::stride][:self.num_segments]
         else:
@@ -72,9 +72,10 @@ class CobotDataHandler:
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(self.seed)
 
-    def get_dataloaders(self, batch_size=8, split_mode="random", train_val_split=0.8, num_test_sequences=120):
-        start_dataset = CobotDataset(self.start_dir, label=0, transform=self.train_transform, mode="random")
-        stop_dataset = CobotDataset(self.stop_dir, label=1, transform=self.train_transform, mode="random")
+    def get_dataloaders(self, batch_size=8, split_mode="random",
+                        train_val_split=0.8, num_test_sequences=120, sequence_interval="5_second"):
+        start_dataset = CobotDataset(self.start_dir, label=0, transform=self.train_transform, sequence_interval=sequence_interval)
+        stop_dataset = CobotDataset(self.stop_dir, label=1, transform=self.train_transform, sequence_interval=sequence_interval)
 
         full_dataset = ConcatDataset([start_dataset, stop_dataset])
 
