@@ -1,4 +1,6 @@
 import os
+import random
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset, random_split
@@ -8,13 +10,13 @@ from torchvision.transforms import functional as F
 from ops.models import TSN
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
-from cobot_dataset.dataset_manager import CobotDataset
+from cobot_dataset.dataset_manager_original import CobotDataset
 
 # Configuration
-start_dataset_dir = '/data/scratch/ec23984/cobot_data/train_start_sequences'
-stop_dataset_dir = '/data/scratch/ec23984/cobot_data/train_stop_sequences'
-test_start_dataset_dir = '/data/scratch/ec23984/cobot_data/test_start_sequences'
-test_stop_dataset_dir = '/data/scratch/ec23984/cobot_data/test_stop_sequences'
+start_dataset_dir = '/data/scratch/ec23984/cobot_data_sequential_split/train_start_sequences'
+stop_dataset_dir = '/data/scratch/ec23984/cobot_data_sequential_split/train_stop_sequences'
+test_start_dataset_dir = '/data/scratch/ec23984/cobot_data_sequential_split/test_start_sequences'
+test_stop_dataset_dir = '/data/scratch/ec23984/cobot_data_sequential_split/test_stop_sequences'
 batch_size = 6
 num_classes = 2  # "start" and "stop"
 num_segments = 5  # Number of frames per sequence
@@ -25,18 +27,8 @@ experiment_dir = './experiments'
 # Ensure the experiments directory exists
 os.makedirs(experiment_dir, exist_ok=True)
 
-# TensorBoard setup
+# set TensorBoard 
 writer = SummaryWriter(log_dir=experiment_dir)
-
-# Define Data Preprocessing
-# transform = transforms.Compose([
-#     transforms.Resize((224, 224)),
-#     transforms.RandomHorizontalFlip(),
-#     transforms.ColorJitter(brightness=0.3, contrast=0.3),
-#     transforms.ToTensor(),
-#     #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-#     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-# ])
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -48,6 +40,7 @@ transform = transforms.Compose([
     transforms.ColorJitter(brightness=0.3, contrast=0.3),
     transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5)),
     transforms.ToTensor(),
+    #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ,
 ])
