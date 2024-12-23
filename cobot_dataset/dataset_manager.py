@@ -32,7 +32,7 @@ class CobotDataset(torch.utils.data.Dataset):
         else:
             raise ValueError("Invalid mode specified: Choose 'random', '5_second', or '2_second'.")
 
-        # Load and transform frames
+        # Load/transform frames
         frames = [self.transform(Image.open(frame).convert('RGB')) for frame in selected_frames]
         frames = torch.stack(frames)  # Shape: (num_segments, 3, height, width)
         return frames, self.label
