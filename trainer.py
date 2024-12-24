@@ -44,7 +44,7 @@ class TSMTrainer:
                 for sequences, labels in t:
                     sequences, labels = sequences.to(self.device), labels.to(self.device)
 
-                    # Flatten sequences for TSM input
+                    # Flatten for TSM input
                     batch_size, num_segments, _, _, _ = sequences.size()
                     sequences = sequences.view(batch_size * num_segments, 3, 224, 224)
 
@@ -66,20 +66,20 @@ class TSMTrainer:
 
                 self.scheduler.step()
 
-            # Log training metrics to TensorBoard
+            # Logs to TensorBoard
             train_accuracy = correct / total
             self.writer.add_scalar('Training Loss', running_loss / len(self.train_loader), epoch)
             self.writer.add_scalar('Training Accuracy', train_accuracy, epoch)
 
-            # Validation Loop
+            # Validate
             self.validate(epoch)
 
-        # Save Model
+        # Save
         model_path = os.path.join(self.experiment_dir, 'cobot_tsm_model.pth')
         torch.save(self.model.state_dict(), model_path)
         print(f"Model saved to {model_path}")
 
-        # Close TensorBoard writer
+        # Close TensorBoard
         self.writer.close()
 
     def validate(self, epoch):
@@ -102,7 +102,7 @@ class TSMTrainer:
                 val_correct += (predicted == labels).sum().item()
                 val_total += labels.size(0)
 
-                # Collect for metrics
+                # Collect metrics
                 all_labels.extend(labels.cpu().numpy())
                 all_preds.extend(predicted.cpu().numpy())
 

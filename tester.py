@@ -19,17 +19,16 @@ class TSMTester:
         self.batch_size = batch_size
         self.device = device
 
-        # Set random seed for reproducibility
         self._set_seed(seed)
 
-        # Initialize Data Handler
+        # Data Handler
         self.data_handler = CobotDataHandler(start_dir, stop_dir, seed)
 
-        # Initialize model and load weights
+        # Initialize model/load weights
         self.model = TSN(num_classes, num_segments, modality='RGB', base_model='resnet50', consensus_type='avg')
         self.model.load_state_dict(torch.load(model_path, map_location=device))
         self.model.to(device)
-        self.model.eval()  # Ensure model is in evaluation mode
+        self.model.eval()
 
     def _set_seed(self, seed):
         random.seed(seed)
@@ -86,7 +85,6 @@ class TSMTester:
         print(f"Recall: {test_recall:.4f}")
         print(f"F1 Score: {test_f1:.4f}")
 
-        # Print Confusion Matrix
         print("\nConfusion Matrix:")
         print(f"{'':<10}Predicted Start  Predicted Stop")
         print(f"Actual Start {conf_matrix[0, 0]:>10} {conf_matrix[0, 1]:>15}")
@@ -99,7 +97,7 @@ class TSMTester:
 if __name__ == "__main__":
     start_dir = '/data/scratch/ec23984/cobot_data/all_start_sequences'
     stop_dir = '/data/scratch/ec23984/cobot_data/all_stop_sequences'
-    model_path = '/data/home/ec23984/code/cobot_project/temporal_shift_module/experiments/sequential_split_final/cobot_tsm_model.pth'
+    model_path = 'experiments/sequential_split_final/cobot_tsm_model.pth'
 
     tester = TSMTester(
         start_dir=start_dir,
