@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from torchvision import transforms
 from moviepy.editor import ImageSequenceClip
-from ops.models import TSN  # Assuming TSN is implemented in ops.models
+from ops.models import TSN 
 
 class CobotDemoGenerator:
     def __init__(self, start_dir, stop_dir, model_path, num_class, num_segments, device):
@@ -23,7 +23,6 @@ class CobotDemoGenerator:
         self.model.to(device)
         self.model.eval()
 
-        # Define transform for inference
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
@@ -42,7 +41,7 @@ class CobotDemoGenerator:
 
     def predict_sequence(self, sequence_tensor):
         batch_size, num_segments, _, _, _ = sequence_tensor.size()
-        sequence_tensor = sequence_tensor.view(batch_size * num_segments, 3, 224, 224)  # Flatten for TSM input
+        sequence_tensor = sequence_tensor.view(batch_size * num_segments, 3, 224, 224)  # Flatten for TSM
         with torch.no_grad():
             outputs = self.model(sequence_tensor)
             _, predicted = torch.max(outputs, 1)
@@ -56,15 +55,19 @@ class CobotDemoGenerator:
         start_paths = [os.path.join(self.start_dir, seq) for seq in start_sequences]
         stop_paths = [os.path.join(self.stop_dir, seq) for seq in stop_sequences]
 
-        sequences = start_paths + stop_paths
-        labels = [0] * (num_samples // 2) + [1] * (num_samples // 2)
+        # Combine paths and labels into a list of tuples
+        combined = list(zip(start_paths, [0] * (num_samples // 2))) + list(zip(stop_paths, [1] * (num_samples // 2)))
 
-        return sequences, labels
+        random.shuffle(combined)
+        sequences, labels = zip(*combined)
+
+        return list(sequences), list(labels)
+
 
     def generate_video(self, sequence_dirs, labels, output_path):
         video_frames = []
         font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.35  # Smaller font size
+        font_scale = 0.45
         font_thickness = 1
 
         for sequence_path, label in zip(sequence_dirs, labels):
@@ -93,8 +96,8 @@ class CobotDemoGenerator:
             final_frame_rgb = cv2.resize(final_frame_rgb, (448, 448), interpolation=cv2.INTER_LINEAR)
 
             # Annotate the last frame
-            prediction_text = f"Predicted: {'start' if prediction == 0 else 'stop'}"
-            label_text = f"Ground Truth: {'start' if label == 0 else 'stop'}"
+            prediction_text = f"Predicted: {'working' if prediction == 0 else 'stopped'}"
+            label_text = f"Ground Truth: {'working' if label == 0 else 'stopped'}"
             color = (0, 255, 0) if prediction == label else (255, 0, 0)  # Green for correct, red for wrong
             cv2.putText(final_frame_rgb, prediction_text, (10, 30), font, font_scale, color, font_thickness, cv2.LINE_AA)
             cv2.putText(final_frame_rgb, label_text, (10, 60), font, font_scale, color, font_thickness, cv2.LINE_AA)
@@ -102,26 +105,22 @@ class CobotDemoGenerator:
             for _ in range(60):  # Hold for 2 seconds
                 video_frames.append(final_frame_rgb)
 
-        # Create video
         clip = ImageSequenceClip(video_frames, fps=40)
         clip.write_videofile(output_path, codec="libx264", audio=False)
 
-# Main execution
+
 if __name__ == "__main__":
     start_dir = '/data/scratch/ec23984/cobot_data/all_start_sequences'
     stop_dir = '/data/scratch/ec23984/cobot_data/all_stop_sequences'
     model_path = 'experiments/random_split_final/cobot_tsm_model.pth'
     output_video = 'cobot_demo_video.mp4'
 
-    # Number of sequences to visualize
-    num_samples = 15
-
-    # Initialize demo generator
+    # Num of sequences to visualise
+    num_samples = 20
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     visualizer = CobotDemoGenerator(start_dir, stop_dir, model_path, num_class=2, num_segments=5, device=device)
 
     # Select random sequences
     sequences, labels = visualizer.select_random_sequences(num_samples)
 
-    # Generate the video
     visualizer.generate_video(sequences, labels, output_video)
