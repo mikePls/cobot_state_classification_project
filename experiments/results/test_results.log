@@ -10,7 +10,8 @@ Confusion Matrix:
           Predicted Start  Predicted Stop
 Actual Start         64               1
 Actual Stop           4              85
-Average Inference Time: 94.04 ms
+Average Inference Time: 94.04 ms*
+*Value may be slightly inflated due to GPU and kernel initialisation overhead.
 
 === Results for Sequential-Split Model ===
 Test Results - Split Mode: sequential
