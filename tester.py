@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import random
 import numpy as np
@@ -97,12 +98,15 @@ class TSMTester:
 if __name__ == "__main__":
     start_dir = '/data/scratch/ec23984/cobot_data/all_start_sequences'
     stop_dir = '/data/scratch/ec23984/cobot_data/all_stop_sequences'
-    model_path = 'experiments/sequential_split_final/cobot_tsm_model.pth'
 
-    tester = TSMTester(
+    # Paths for pre-trained models
+    sequential_model_path = 'experiments/sequential_split_final/cobot_tsm_model.pth'
+    random_split_model_path = 'experiments/random_split_final/cobot_tsm_model.pth'
+
+    sequential_tester = TSMTester(
         start_dir=start_dir,
         stop_dir=stop_dir,
-        model_path=model_path,
+        model_path=sequential_model_path,
         num_classes=2,
         num_segments=5,
         batch_size=6,
@@ -110,8 +114,24 @@ if __name__ == "__main__":
         seed=42
     )
 
-    # print("Testing on random split:")
-    # tester.test(split_mode="random", sequence_interval="5_second")
+    random_split_tester = TSMTester(
+        start_dir=start_dir,
+        stop_dir=stop_dir,
+        model_path=random_split_model_path,
+        num_classes=2,
+        num_segments=5,
+        batch_size=6,
+        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        seed=42
+    )
 
-    print("\nTesting on sequential split:")
-    tester.test(split_mode="sequential")
+    log_file = open("experiments/results/test_results.log", "w")
+    sys.stdout = log_file
+
+    print("\n*** Results for Random-Split Model ***")
+    random_split_tester.test(split_mode="random", sequence_interval="5_second")
+
+    print("\n=== Results for Sequential-Split Model ===")
+    sequential_tester.test(split_mode="sequential", sequence_interval="5_second")
+
+    log_file.close()

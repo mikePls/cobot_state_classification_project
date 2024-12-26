@@ -1,0 +1,26 @@
+
+*** Results for Random-Split Model ***
+Test Results - Split Mode: random
+Accuracy: 0.9675
+Precision: 0.9685
+Recall: 0.9675
+F1 Score: 0.9676
+
+Confusion Matrix:
+          Predicted Start  Predicted Stop
+Actual Start         64               1
+Actual Stop           4              85
+Average Inference Time: 94.04 ms
+
+=== Results for Sequential-Split Model ===
+Test Results - Split Mode: sequential
+Accuracy: 0.9667
+Precision: 0.9667
+Recall: 0.9667
+F1 Score: 0.9667
+
+Confusion Matrix:
+          Predicted Start  Predicted Stop
+Actual Start        116               4
+Actual Stop           4             116
+Average Inference Time: 5.57 ms
