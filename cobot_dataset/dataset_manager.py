@@ -45,7 +45,6 @@ class CobotDataHandler:
         self.split_indices = {}  # Dictionary to remember splits
         self._set_seed()
 
-        # Define transforms
         self.train_transform = transforms.Compose([
             #transforms.Resize((224, 224)),
             transforms.RandomHorizontalFlip(p=0.5),
@@ -95,13 +94,36 @@ class CobotDataHandler:
             self.split_indices["val"] = val_dataset.indices
             self.split_indices["test"] = test_dataset.indices
 
-        elif split_mode == "sequential":
-            # Sequential split: first num_test_sequences for test, rest for train and val
-            test_start_dataset = Subset(start_dataset, range(num_test_sequences))
-            test_stop_dataset = Subset(stop_dataset, range(num_test_sequences))
+        # elif split_mode == "sequential":
+        #     # Sequential split: first num_test_sequences for test, rest for train and val
+        #     test_start_dataset = Subset(start_dataset, range(num_test_sequences))
+        #     test_stop_dataset = Subset(stop_dataset, range(num_test_sequences))
 
-            train_start_dataset = Subset(start_dataset, range(num_test_sequences, len(start_dataset)))
-            train_stop_dataset = Subset(stop_dataset, range(num_test_sequences, len(stop_dataset)))
+        #     train_start_dataset = Subset(start_dataset, range(num_test_sequences, len(start_dataset)))
+        #     train_stop_dataset = Subset(stop_dataset, range(num_test_sequences, len(stop_dataset)))
+
+        #     train_val_dataset = ConcatDataset([train_start_dataset, train_stop_dataset])
+        #     test_dataset = ConcatDataset([test_start_dataset, test_stop_dataset])
+
+        #     train_size = int(train_val_split * len(train_val_dataset))
+        #     val_size = len(train_val_dataset) - train_size
+
+        #     train_dataset, val_dataset = random_split(
+        #         train_val_dataset,
+        #         [train_size, val_size],
+        #         generator=torch.Generator().manual_seed(self.seed)
+        #     )
+
+        #     self.split_indices["train"] = [i for i in range(len(train_dataset))]
+        #     self.split_indices["val"] = [i for i in range(len(val_dataset))]
+        #     self.split_indices["test"] = [i for i in range(len(test_dataset))]
+        elif split_mode == "sequential":
+            # Sequential split: first sequences for train, last num_test_sequences for test
+            train_start_dataset = Subset(start_dataset, range(len(start_dataset) - num_test_sequences))
+            train_stop_dataset = Subset(stop_dataset, range(len(stop_dataset) - num_test_sequences))
+
+            test_start_dataset = Subset(start_dataset, range(len(start_dataset) - num_test_sequences, len(start_dataset)))
+            test_stop_dataset = Subset(stop_dataset, range(len(stop_dataset) - num_test_sequences, len(stop_dataset)))
 
             train_val_dataset = ConcatDataset([train_start_dataset, train_stop_dataset])
             test_dataset = ConcatDataset([test_start_dataset, test_stop_dataset])
@@ -118,6 +140,7 @@ class CobotDataHandler:
             self.split_indices["train"] = [i for i in range(len(train_dataset))]
             self.split_indices["val"] = [i for i in range(len(val_dataset))]
             self.split_indices["test"] = [i for i in range(len(test_dataset))]
+
         else:
             raise ValueError("Invalid split_mode: Choose 'random' or 'sequential'.")
 
