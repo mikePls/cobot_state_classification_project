@@ -82,7 +82,7 @@ class CobotDemoGenerator:
                     raise ValueError(f"Image {frame_path} could not be loaded.")
                 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert for video output
 
-                # Resize frame to double size (e.g., 448x448 for 224x224 input)
+                # Resize frame to double size (448x448)
                 image_rgb = cv2.resize(image_rgb, (448, 448), interpolation=cv2.INTER_LINEAR)
 
                 for _ in range(7):  # Duplicate each frame 7 times to make them last longer

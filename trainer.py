@@ -23,11 +23,11 @@ class TSMTrainer:
         self.experiment_dir = experiment_dir
         self.learning_rate = learning_rate
 
-        # Initialize model
+        # Model initialisation..
         self.model = TSN(num_classes, num_segments, modality='RGB', base_model='resnet50', consensus_type='avg', dropout=dropout)
         self.model.to(device)
 
-        # Loss, Optimizer, Scheduler
+        # Loss, Optimiser, Scheduler
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.scheduler = StepLR(self.optimizer, step_size=step_size, gamma=gamma)
@@ -79,7 +79,6 @@ class TSMTrainer:
         torch.save(self.model.state_dict(), model_path)
         print(f"Model saved to {model_path}")
 
-        # Close TensorBoard
         self.writer.close()
 
     def validate(self, epoch):
@@ -106,14 +105,14 @@ class TSMTrainer:
                 all_labels.extend(labels.cpu().numpy())
                 all_preds.extend(predicted.cpu().numpy())
 
-        # Compute Validation Metrics
+        # Validation Metrics
         val_loss /= len(self.val_loader)
         val_accuracy = val_correct / val_total
         precision = precision_score(all_labels, all_preds, average='weighted')
         recall = recall_score(all_labels, all_preds, average='weighted')
         f1 = f1_score(all_labels, all_preds, average='weighted')
 
-        # Log validation metrics to TensorBoard
+        # Logs to TensorBoard
         self.writer.add_scalar('Validation Loss', val_loss, epoch)
         self.writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
         self.writer.add_scalar('Validation Precision', precision, epoch)
@@ -139,7 +138,7 @@ class TSMTrainer:
                 test_correct += (predicted == labels).sum().item()
                 test_total += labels.size(0)
 
-                # Collect for metrics
+                # Metrics
                 all_test_labels.extend(labels.cpu().numpy())
                 all_test_preds.extend(predicted.cpu().numpy())
 

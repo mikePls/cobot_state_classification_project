@@ -6,9 +6,10 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import confusion_matrix
 from ops.models import TSN
 from cobot_dataset.dataset_manager import CobotDataHandler
-from sklearn.metrics import confusion_matrix
+
 
 class TSMTester:
     def __init__(self, start_dir, stop_dir, model_path, num_classes, num_segments, batch_size, device, seed=42):
@@ -54,7 +55,7 @@ class TSMTester:
             for sequences, labels in test_loader:
                 sequences, labels = sequences.to(self.device), labels.to(self.device)
 
-                # Flatten sequences
+                # Flatten seqs
                 batch_size, num_segments, _, _, _ = sequences.size()
                 sequences = sequences.view(batch_size * num_segments, 3, 224, 224)
 
@@ -67,7 +68,7 @@ class TSMTester:
                 test_correct += (predicted == labels).sum().item()
                 test_total += labels.size(0)
 
-                # Collect predictions and labels
+                # Log predictions and labels
                 all_test_labels.extend(labels.cpu().numpy())
                 all_test_preds.extend(predicted.cpu().numpy())
 
@@ -77,9 +78,8 @@ class TSMTester:
         test_recall = recall_score(all_test_labels, all_test_preds, average='weighted')
         test_f1 = f1_score(all_test_labels, all_test_preds, average='weighted')
         conf_matrix = confusion_matrix(all_test_labels, all_test_preds)
-        average_inference_time = (total_inference_time / num_batches) * 1000
+        average_inference_time = (total_inference_time / num_batches) * 1000 # In m/s
 
-        # Print results
         print(f"Test Results - Split Mode: {split_mode}")
         print(f"Accuracy: {test_accuracy:.4f}")
         print(f"Precision: {test_precision:.4f}")
@@ -94,7 +94,6 @@ class TSMTester:
         print(f"Average Inference Time: {average_inference_time:.2f} ms")
         
 
-# Main execution
 if __name__ == "__main__":
     start_dir = '/data/scratch/ec23984/cobot_data/all_start_sequences'
     stop_dir = '/data/scratch/ec23984/cobot_data/all_stop_sequences'
@@ -125,8 +124,8 @@ if __name__ == "__main__":
         seed=42
     )
 
-    log_file = open("experiments/results/test_results.log", "w")
-    sys.stdout = log_file
+    # log_file = open("experiments/results/test_results.log", "w")
+    # sys.stdout = log_file
 
     print("\n*** Results for Random-Split Model ***")
     random_split_tester.test(split_mode="random", sequence_interval="5_second")
@@ -134,4 +133,4 @@ if __name__ == "__main__":
     print("\n=== Results for Sequential-Split Model ===")
     sequential_tester.test(split_mode="sequential", sequence_interval="5_second")
 
-    log_file.close()
+    # log_file.close()

@@ -18,7 +18,7 @@ batch_size = 1
 num_segments = 8
 height, width = 224, 224
 
-# Random tensor mimicking RGB frames
+# Random tensor RGB frames
 dummy_input = torch.rand(batch_size, num_segments, 3, height, width)
 
 # Perform a forward pass

@@ -35,7 +35,7 @@ class CobotDataset(Dataset):
             frame_indices = torch.arange(0, min(self.num_segments, len(frame_paths))).long()
         elif self.mode == 'random':
             # 50% random, 25% 5_second, 25% 2_second
-            prob = torch.rand(1).item()  # Generate a random number between 0 and 1
+            prob = torch.rand(1).item()
             if prob < 0.33:
                 # Random sampling
                 frame_indices = torch.randperm(len(frame_paths))[:self.num_segments]
@@ -49,7 +49,6 @@ class CobotDataset(Dataset):
             raise ValueError(f"Unsupported mode: {self.mode}. Choose from '5_second', '2_second', 'random'.")
 
 
-        # Load frames as images and apply transformations
         frames = [self.transform(Image.open(frame_paths[i]).convert('RGB')) for i in frame_indices]
         frames = torch.stack(frames)  # Shape: (num_segments, 3, height, width)
         return frames, self.label
